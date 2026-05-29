@@ -1,99 +1,206 @@
-# 🛍️ E-Commerce Web Application (Cart & Mass Checkout System)
+# 🛍️ E-Commerce Web Application
 
-A lightweight, robust, and native PHP-based e-commerce platform featuring dynamic single-product purchases ("Beli Sekarang") and an advanced session-based multiple-product shopping cart system ("+ Keranjang") with consolidated mass checkout tracking.
+## Cart & Consolidated Checkout System
 
----
-
-## 🚀 Features
-
-* **User Authentication & Session Security**
-  Complete login protection across critical paths:
-
-  * `checkout.php`
-  * `checkout_massal.php`
-  * `keranjang_detail.php`
-  * `checkout_finish.php`
-
-* **Dual-Purchase Workflow Architecture**
-
-  ### 1. Instant Purchase ("Beli Sekarang")
-
-  Direct checkout path processing single items instantly to the transaction node.
-
-  ### 2. Session-Based Shopping Cart ("+ Keranjang")
-
-  Multi-item storage using native PHP associative arrays (`$_SESSION['cart']`) without redundant database loading until checkout confirmation.
-
-* **Consolidated Mass Checkout**
-
-  Bundles multiple cart items under a single unique cryptographic Invoice Identifier:
-
-  ```text
-  INV-YYYYMMDD-[HASH]
-  ```
-
-* **Polymorphic Transaction Ledger (`checkout_finish.php`)**
-
-  Unified dynamic receipt system supporting:
-
-  * Single item transaction (`?id=`)
-  * Grouped invoice transaction (`?invoice=`)
-
-* **Responsive UI Components**
-
-  Built using:
-
-  * Bootstrap 5
-  * FontAwesome
-  * Custom responsive table layouts
+A native PHP-based E-Commerce web application designed to handle online product transactions with dual-purchase workflows, shopping cart management, mass checkout processing, invoice generation, and integrated admin management.
 
 ---
 
-# 📂 File Directory Structure
+# 📌 Project Overview
+
+This application functions as an online shopping platform where users can browse products, add multiple items into a shopping cart, and complete purchases either instantly or collectively using a unified invoice system.
+
+The system is optimized using lightweight native PHP architecture combined with Bootstrap responsive interfaces and session-based cart handling.
+
+---
+
+# 💻 Technologies Used
+
+| Technology                    | Purpose                                 |
+| ----------------------------- | --------------------------------------- |
+| PHP Native (Vanilla PHP)      | Core backend programming                |
+| MySQL / MariaDB               | Database management                     |
+| MySQLi Extension              | Database interaction                    |
+| Bootstrap 5                   | Responsive UI framework                 |
+| FontAwesome / Bootstrap Icons | Icon system                             |
+| PHP Session (`$_SESSION`)     | Temporary cart & login state management |
+
+---
+
+# 📂 Project Directory Structure
 
 ```text
+├── admin/
+│   ├── admin_kategori.php
+│   ├── admin_laporan.php
+│   ├── admin_media.php
+│   ├── admin_produk.php
+│   └── admin.php
+│
+├── assets/
+│   ├── bootstrap/
+│   ├── css/
+│   └── images/
+│
 ├── config/
 │   └── koneksi.php
 │
 ├── includes/
+│   ├── footer.php
 │   ├── header.php
-│   └── footer.php
+│   └── sidebar_admin.php
 │
-├── index.php
-├── keranjang_proses.php
-├── keranjang_detail.php
+├── startbootstrap-sb-admin-gh-pages/
+│
+├── checkout_finish.php
 ├── checkout_massal.php
-└── checkout_finish.php
+├── checkout.php
+├── index.php
+├── keranjang_detail.php
+├── keranjang_proses.php
+├── login_proses.php
+├── login.php
+└── logout.php
 ```
-
-### Description
-
-| File                   | Function                                  |
-| ---------------------- | ----------------------------------------- |
-| `config/koneksi.php`   | Database configuration and initialization |
-| `includes/header.php`  | Global navigation and assets              |
-| `includes/footer.php`  | Closing HTML and script attachments       |
-| `index.php`            | Product catalog display                   |
-| `keranjang_proses.php` | Add-to-cart processing                    |
-| `keranjang_detail.php` | Cart dashboard and totals                 |
-| `checkout_massal.php`  | Bulk checkout form                        |
-| `checkout_finish.php`  | Invoice & success page                    |
 
 ---
 
-# 🛠️ Data Architecture (Database Design)
+# 📖 Folder & File Descriptions
+
+## 🔐 Authentication System
+
+| File               | Description                    |
+| ------------------ | ------------------------------ |
+| `login.php`        | User login interface           |
+| `login_proses.php` | Login verification processor   |
+| `logout.php`       | Session destroy/logout handler |
+
+---
+
+## 🛒 Shopping & Checkout System
+
+| File                   | Description                    |
+| ---------------------- | ------------------------------ |
+| `index.php`            | Product catalog homepage       |
+| `keranjang_proses.php` | Add-to-cart session processor  |
+| `keranjang_detail.php` | Shopping cart detail page      |
+| `checkout.php`         | Instant checkout form          |
+| `checkout_massal.php`  | Bulk checkout form             |
+| `checkout_finish.php`  | Dynamic invoice & success page |
+
+---
+
+## ⚙️ Admin Panel
+
+| File                       | Description                       |
+| -------------------------- | --------------------------------- |
+| `admin/admin.php`          | Main admin dashboard              |
+| `admin/admin_produk.php`   | Product CRUD management           |
+| `admin/admin_kategori.php` | Product category management       |
+| `admin/admin_media.php`    | Media & image management          |
+| `admin/admin_laporan.php`  | Transaction reports & sales recap |
+
+---
+
+## 🧩 Shared Components
+
+| File                         | Description                |
+| ---------------------------- | -------------------------- |
+| `includes/header.php`        | Navigation & global assets |
+| `includes/footer.php`        | Closing HTML & JS scripts  |
+| `includes/sidebar_admin.php` | Admin sidebar navigation   |
+
+---
+
+# 🚀 Main Features
+
+## 1. 🔒 Authentication & Session Security
+
+* Session-protected routes
+* Unauthorized URL access prevention
+* Login validation system
+* Session-based user management
+
+---
+
+## 2. 🛍️ Dual Purchase Workflow
+
+### ✅ Instant Checkout ("Beli Sekarang")
+
+Allows users to directly purchase a single product without affecting cart contents.
+
+### ✅ Shopping Cart System ("+ Keranjang")
+
+Users can:
+
+* Store multiple products
+* Modify quantities
+* Remove items dynamically
+* Maintain cart state using `$_SESSION['cart']`
+
+---
+
+## 3. 📦 Consolidated Mass Checkout
+
+All cart items are merged into one invoice code format:
+
+```text
+INV-YYYYMMDD-[HASH]
+```
+
+Benefits:
+
+* Cleaner transaction grouping
+* Easier purchase tracking
+* Better invoice organization
+
+---
+
+## 4. 🧾 Dynamic Invoice System
+
+`checkout_finish.php` intelligently handles:
+
+### Single Purchase
+
+```text
+? id = transaction_id
+```
+
+### Mass Checkout
+
+```text
+? invoice = invoice_code
+```
+
+The page dynamically generates transaction receipts depending on the transaction type.
+
+---
+
+## 5. 📊 Admin Dashboard System
+
+The admin panel provides:
+
+* Product management
+* Category management
+* Media/image handling
+* Transaction reporting
+* Sales recap system
+
+---
+
+# 🛠️ Database Architecture
 
 ## 1. `produk` Table
 
-Stores active product catalog data.
+Stores all active product inventory data.
 
-| Column Name  | Data Type    | Attributes                  | Description                       |
-| ------------ | ------------ | --------------------------- | --------------------------------- |
-| `no`         | INT          | PRIMARY KEY, AUTO_INCREMENT | Unique product ID                 |
-| `namaproduk` | VARCHAR(100) | NOT NULL                    | Product name                      |
-| `harga`      | INT          | NOT NULL                    | Product price                     |
-| `image`      | VARCHAR(255) | NOT NULL                    | Product image filename            |
-| `ket`        | TEXT         | NULL                        | Product description/specification |
+| Column       | Description                       |
+| ------------ | --------------------------------- |
+| `no`         | Product ID (Primary Key)          |
+| `namaproduk` | Product name                      |
+| `harga`      | Product price                     |
+| `image`      | Product image filename            |
+| `ket`        | Product description/specification |
 
 ---
 
@@ -101,32 +208,67 @@ Stores active product catalog data.
 
 Stores completed transaction records.
 
-| Column Name   | Data Type    | Attributes                  | Description            |
-| ------------- | ------------ | --------------------------- | ---------------------- |
-| `no`          | INT          | PRIMARY KEY, AUTO_INCREMENT | Transaction ID         |
-| `namabarang`  | VARCHAR(100) | NOT NULL                    | Purchased product name |
-| `pembeli`     | VARCHAR(100) | NOT NULL                    | Customer name          |
-| `invoice`     | VARCHAR(50)  | NOT NULL                    | Invoice grouping code  |
-| `rekbank`     | VARCHAR(100) | NOT NULL                    | Payment information    |
-| `harga`       | INT          | NOT NULL                    | Unit price             |
-| `qty`         | INT          | NOT NULL                    | Product quantity       |
-| `total_harga` | INT          | NOT NULL                    | Final total price      |
+| Column        | Description            |
+| ------------- | ---------------------- |
+| `no`          | Transaction ID         |
+| `namabarang`  | Purchased product name |
+| `pembeli`     | Customer name          |
+| `invoice`     | Invoice code           |
+| `rekbank`     | Payment method         |
+| `harga`       | Unit price             |
+| `qty`         | Quantity purchased     |
+| `total_harga` | Final total cost       |
 
 ---
 
-# ⚙️ Installation & Deployment
+# 🔄 User Workflow
 
-## 1. Clone or Download Project
+## 👤 Customer Side
 
-Place the project inside your server root directory.
+1. User logs in via `login.php`
+2. Browse products in `index.php`
+3. Choose:
 
-### XAMPP Example
+   * **Beli Sekarang**
+   * **+ Keranjang**
+4. Open cart page (`keranjang_detail.php`)
+5. Proceed to:
+
+   * Single checkout
+   * Mass checkout
+6. Complete payment information
+7. Receive transaction invoice
+
+---
+
+## 👨‍💼 Admin Side
+
+1. Access admin dashboard:
+
+```text
+localhost/project_name/admin/admin.php
+```
+
+2. Manage:
+
+* Products
+* Categories
+* Media files
+* Transaction reports
+
+---
+
+# ⚙️ Installation Guide
+
+## 1. Place Project Inside Server Directory
+
+### XAMPP
 
 ```text
 C:/xampp/htdocs/
 ```
 
-### Linux Apache Example
+### Linux Apache
 
 ```text
 /var/www/html/
@@ -134,7 +276,7 @@ C:/xampp/htdocs/
 
 ---
 
-## 2. Configure Database Connection
+## 2. Configure Database
 
 Edit:
 
@@ -142,16 +284,16 @@ Edit:
 config/koneksi.php
 ```
 
-Then update the credentials:
+Example:
 
 ```php
 <?php
 
 $koneksi = mysqli_connect(
     "localhost",
-    "your_username",
-    "your_password",
-    "your_db_name"
+    "root",
+    "",
+    "nama_database"
 );
 
 ?>
@@ -166,52 +308,44 @@ Use:
 * phpMyAdmin
 * MySQL Workbench
 * Adminer
-* or MySQL CLI
 
-Create tables based on the schema structure above.
+Create tables based on the schema above.
 
 ---
 
-## 4. Run the Application
+## 4. Run Project
 
 Open browser:
 
 ```text
-http://localhost/your_project_folder/index.php
+http://localhost/nama_project/index.php
 ```
 
 ---
 
-## 5. Authentication
+# 🎨 UI & Design Components
 
-Login authentication/session must be active before accessing protected routes.
-
----
-
-# 🧩 Technology Stack
-
-* PHP Native
-* MySQL
-* Bootstrap 5
-* FontAwesome
-* HTML5
-* CSS3
-* JavaScript
+* Bootstrap 5 Responsive Layout
+* FontAwesome Icons
+* Custom CSS Styling
+* Session-Based Dynamic Navigation
+* Admin Dashboard Template Integration
 
 ---
 
-# 📸 System Highlights
+# 📌 System Highlights
 
-✅ Session-based cart system
-✅ Dynamic invoice generation
-✅ Mass checkout support
-✅ Responsive interface
-✅ Lightweight architecture
-✅ Clean procedural PHP structure
+✅ Native PHP Architecture
+✅ Session-Based Shopping Cart
+✅ Mass Checkout System
+✅ Dynamic Invoice Generator
+✅ Responsive Bootstrap UI
+✅ Admin Dashboard Integration
+✅ Lightweight & Easy Deployment
 
 ---
 
 # 👨‍💻 Developer
 
-Developed by Rakha Fadilah Riyadi
-Front-End & PHP Web Developer
+**Rakha Fadilah Riyadi**
+Front-End & Web Developer
