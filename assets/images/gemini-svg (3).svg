@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 450" width="100%" height="100%">
+  <!-- Efek Grid Perspektif Tech di Background -->
+  <g stroke="#e2e8f0" stroke-width="1" opacity="0.4">
+    <line x1="0" y1="350" x2="1200" y2="350" />
+    <line x1="0" y1="390" x2="1200" y2="390" />
+    <path d="M100,450 L300,350 M400,450 L500,350 M700,450 L700,350 M1000,450 L900,350" />
+  </g>
+
+  <!-- ILUSTRASI GEOMETRI 3D FLAT (SISI KANAN AGAK KE TENGAH) -->
+  <g transform="translate(850, 220)">
+    <!-- Bayangan Dasar Gawai -->
+    <polygon points="-180,60 30,-30 210,40 0,130" fill="#cbd5e1" opacity="0.6" />
+    
+    <!-- Lapisan Body Konsol/Tablet Utama -->
+    <polygon points="-150,30 60,-60 180,0 -30,90" fill="#475569" />
+    <polygon points="-150,15 60,-75 180,-15 -30,75" fill="#1e293b" />
+    
+    <!-- Layar Utama Gadget -->
+    <polygon points="-135,15 50,-68 165,-12 -20,70" fill="#3b82f6" />
+    
+    <!-- Floating Minimalist Abstract Bars (Grafik Stat) -->
+    <polygon points="-70,15 -20,-8 -27,-3 -77,20" fill="#60a5fa" />
+    <polygon points="-10,-13 50,-40 57,-35 -3,-8" fill="#34d399" />
+    <polygon points="15,-25 35,-35 40,-30 20,-20" fill="#fbbf24" />
+    
+    <!-- Floating Media Card Layer -->
+    <g transform="translate(-80, -90)">
+      <polygon points="-50,15 30,-25 80,0 0,40" fill="#0f172a" />
+      <polygon points="-50,8 30,-32 80,-7 0,33" fill="#f43f5e" />
+      <line x1="-15" y1="8" x2="25" y2="-12" stroke="#ffffff" stroke-width="5" stroke-linecap="round" />
+      <circle cx="45" cy="-2" r="5" fill="#fff" />
+    </g>
+
+    <!-- Kubus Mini Pelengkap -->
+    <g transform="translate(140, 40)">
+      <polygon points="-15,0 0,-8 15,0 0,8" fill="#a855f7" />
+      <polygon points="-15,0 0,8 0,20 -15,12" fill="#7e22ce" />
+      <polygon points="0,8 15,0 15,12 0,20" fill="#6b21a8" />
+    </g>
+  </g>
+</svg>

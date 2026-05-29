@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 450" width="100%" height="100%">
+  <!-- Ornamen Garis Estetik Minimalis -->
+  <path d="M700,0 L750,450 M720,0 L770,450" stroke="#f1f5f9" stroke-width="8" />
+
+  <!-- GRAFIS VEKTOR (SISI KANAN) -->
+  <g transform="translate(880, 225)">
+    <!-- Base Bulat Belakang -->
+    <circle cx="0" cy="0" r="130" fill="#f1f5f9" />
+    <circle cx="-20" cy="-20" r="130" fill="none" stroke="#10b981" stroke-width="2" />
+    
+    <!-- Simbol Hanger Baju Vektor (Clean Line Art) -->
+    <g transform="translate(0, -35)" stroke="#1e293b" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none">
+      <!-- Pengait Atas Hanger -->
+      <path d="M 0,-20 C 0,-40 20,-40 20,-25 C 20,-10 0,-10 0,0" stroke-width="5"/>
+      <!-- Kerangka Segitiga Batang Gantungan -->
+      <polygon points="-85,55 85,55 0,0" fill="#ffffff" stroke-width="6" />
+      <!-- Aksen Layer Pakaian Minimalis -->
+      <line x1="-50" y1="55" x2="50" y2="55" stroke="#10b981" stroke-width="5" />
+    </g>
+    
+    <!-- Floating Tag Label Harga Minimalis -->
+    <g transform="translate(60, 40) rotate(-30)">
+      <rect x="0" y="0" width="45" height="70" rx="4" fill="#1e293b" />
+      <circle cx="22.5" cy="15" r="4" fill="#ffffff" />
+      <line x1="12" y1="40" x2="33" y2="40" stroke="#94a3b8" stroke-width="4" />
+      <line x1="12" y1="52" x2="25" y2="52" stroke="#94a3b8" stroke-width="4" />
+    </g>
+  </g>
+</svg>
