@@ -9,13 +9,46 @@ if (!isset($_SESSION['login'])) {
 include 'config/koneksi.php';
 include 'includes/header.php';
 
-// Menangkap ID order barusan
+// Ambil parameter id (untuk beli langsung) atau invoice (untuk checkout massal)
 $id_order = isset($_GET['id']) ? mysqli_real_escape_string($koneksi, $_GET['id']) : '';
+$inv_order = isset($_GET['invoice']) ? mysqli_real_escape_string($koneksi, $_GET['invoice']) : '';
 
-$query_order = mysqli_query($koneksi, "SELECT * FROM checkoutfinish WHERE no = '$id_order'") or die(mysqli_error($koneksi));
-$order = mysqli_fetch_assoc($query_order);
+if (!empty($id_order)) {
+    // JALUR NOTA TUNGGAL (Beli Sekarang)
+    $query_order = mysqli_query($koneksi, "SELECT * FROM checkoutfinish WHERE no = '$id_order'") or die(mysqli_error($koneksi));
+    $order = mysqli_fetch_assoc($query_order);
+    
+    if (!$order) {
+        echo "<script>window.location.href = 'index.php';</script>";
+        exit;
+    }
+    // Buat variabel dummy array agar strukturnya sama dengan massal di bawah
+    $data_nota = [$order]; 
+    $grand_total = $order['total_harga'];
+    $invoice_tampil = $order['invoice'];
+    $pembeli_tampil = $order['pembeli'];
+    $rekbank_tampil = $order['rekbank'];
 
-if (!$order) {
+} elseif (!empty($inv_order)) {
+    // JALUR NOTA MASSAL (Dari Keranjang)
+    $query_order = mysqli_query($koneksi, "SELECT * FROM checkoutfinish WHERE invoice = '$inv_order'") or die(mysqli_error($koneksi));
+    
+    if (mysqli_num_rows($query_order) == 0) {
+        echo "<script>window.location.href = 'index.php';</script>";
+        exit;
+    }
+
+    $data_nota = [];
+    $grand_total = 0;
+    while ($row = mysqli_fetch_assoc($query_order)) {
+        $data_nota[] = $row;
+        $grand_total += $row['total_harga'];
+        // Ambil info utama dari baris pertama
+        $invoice_tampil = $row['invoice'];
+        $pembeli_tampil = $row['pembeli'];
+        $rekbank_tampil = $row['rekbank'];
+    }
+} else {
     echo "<script>window.location.href = 'index.php';</script>";
     exit;
 }
@@ -40,28 +73,31 @@ if (!$order) {
                         
                         <div class="d-flex justify-content-between mb-2 small">
                             <span class="text-muted">No. Invoice:</span>
-                            <span class="fw-bold text-dark"><?php echo $order['invoice']; ?></span>
-                        </div>
-                        <div class="d-flex justify-content-between mb-2 small">
-                            <span class="text-muted">Nama Barang:</span>
-                            <span class="fw-bold text-dark"><?php echo $order['namabarang']; ?></span>
+                            <span class="fw-bold text-dark"><?php echo $invoice_tampil; ?></span>
                         </div>
                         <div class="d-flex justify-content-between mb-2 small">
                             <span class="text-muted">Nama Pembeli:</span>
-                            <span class="text-dark"><?php echo $order['pembeli']; ?></span>
+                            <span class="text-dark"><?php echo $pembeli_tampil; ?></span>
                         </div>
                         <div class="d-flex justify-content-between mb-2 small">
                             <span class="text-muted">Rekening Bank:</span>
-                            <span class="text-dark"><?php echo $order['rekbank']; ?></span>
+                            <span class="text-dark"><?php echo $rekbank_tampil; ?></span>
                         </div>
-                        <div class="d-flex justify-content-between mb-2 small">
-                            <span class="text-muted">Jumlah Item:</span>
-                            <span class="text-dark"><?php echo $order['qty']; ?> pcs</span>
+                        
+                        <div class="my-3 border-top pt-2">
+                            <span class="text-muted small d-block mb-1">Daftar Produk:</span>
+                            <?php foreach ($data_nota as $item): ?>
+                                <div class="d-flex justify-content-between align-items-center mb-1 small">
+                                    <span class="text-dark fw-semibold">- <?php echo $item['namabarang']; ?> (<?php echo $item['qty']; ?>x)</span>
+                                    <span class="text-muted">Rp<?php echo number_format($item['total_harga'], 0, ',', '.'); ?></span>
+                                </div>
+                            <?php endforeach; ?>
                         </div>
+
                         <hr>
                         <div class="d-flex justify-content-between align-items-center">
                             <span class="fw-bold text-dark">Total Pembayaran:</span>
-                            <span class="fw-bold text-primary fs-5">Rp<?php echo number_format($order['total_harga'], 0, ',', '.'); ?></span>
+                            <span class="fw-bold text-primary fs-5">Rp<?php echo number_format($grand_total, 0, ',', '.'); ?></span>
                         </div>
                     </div>
 
