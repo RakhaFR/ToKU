@@ -12,7 +12,6 @@ include 'includes/header.php';
 // Menangkap parameter ID Produk
 $id_produk = isset($_GET['id']) ? mysqli_real_escape_string($koneksi, $_GET['id']) : '';
 
-// Ambil data produk tunggal
 $query_produk = mysqli_query($koneksi, "SELECT * FROM produk WHERE no = '$id_produk'");
 $produk = mysqli_fetch_assoc($query_produk);
 
@@ -21,7 +20,6 @@ if (!$produk) {
     exit;
 }
 
-// Proses Input Data transaksi langsung jika tombol ditekan
 if (isset($_POST['proses_checkout'])) {
     $namabarang  = mysqli_real_escape_string($koneksi, $produk['namaproduk']);
     $pembeli     = mysqli_real_escape_string($koneksi, $_POST['pembeli']);
@@ -31,7 +29,6 @@ if (isset($_POST['proses_checkout'])) {
     $total_harga = $harga * $qty;
     $invoice     = "INV-" . rand(10000, 99999);
 
-    // Validasi input form wajib diisi
     if (empty(trim($pembeli)) || empty(trim($rekbank))) {
         echo "<script>
                 alert('Gagal! Nama Pembeli dan Metode Pembayaran wajib diisi.');
@@ -40,13 +37,11 @@ if (isset($_POST['proses_checkout'])) {
         exit;
     }
 
-    // Insert ke tabel checkoutfinish
     $query_insert = "INSERT INTO checkoutfinish (namabarang, pembeli, invoice, rekbank, harga, qty, total_harga) 
                      VALUES ('$namabarang', '$pembeli', '$invoice', '$rekbank', '$harga', '$qty', '$total_harga')";
 
     if (mysqli_query($koneksi, $query_insert)) {
         $id_terakhir = mysqli_insert_id($koneksi);
-        // Menggunakan alert browser biasa agar simpel saat demonstrasi ujian
         echo "<script>
                 alert('Transaksi Berhasil Disimpan!');
                 window.location.href = 'checkout_finish.php?id=" . $id_terakhir . "';

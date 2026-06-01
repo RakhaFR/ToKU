@@ -6,7 +6,7 @@ if (!isset($_SESSION['login'])) {
     exit;
 }
 
-// Sinkronisasi file agar tidak tabrakan data database
+
 include_once 'config/koneksi.php';
 include 'includes/header.php';
 
@@ -26,7 +26,6 @@ elseif (isset($_GET['kategori']) && !empty(trim($_GET['kategori']))) {
     $info_pencarian = "Menampilkan Kategori: <strong>\"" . htmlspecialchars($kat_pilihan) . "\"</strong>";
 }
 
-// Query mengambil data produk
 $query_produk = mysqli_query($koneksi, "SELECT produk.*, kategori.kategori 
                                         FROM produk 
                                         LEFT JOIN kategori ON produk.kode = kategori.kode 

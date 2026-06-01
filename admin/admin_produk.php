@@ -18,7 +18,6 @@ if (isset($_POST['proses_tambah_produk'])) {
     $tmp_name = $_FILES['image']['tmp_name'];
 
     if ($filename != "") {
-        // Disamakan foldernya dengan proses edit agar konsisten ke direktori assets
         move_uploaded_file($tmp_name, "../assets/images/" . $filename);
     } else {
         $filename = "default.jpg";
@@ -65,7 +64,7 @@ if (isset($_GET['hapus_produk'])) {
     }
 }
 
-// Urutan diubah dari DESC menjadi ASC agar urut dari #1 ke #7
+
 $query = mysqli_query($koneksi, "SELECT * FROM produk ORDER BY no ASC");
 ?>
 <!DOCTYPE html>
@@ -76,7 +75,7 @@ $query = mysqli_query($koneksi, "SELECT * FROM produk ORDER BY no ASC");
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kelola Produk - Panel Admin</title>
     <link rel="stylesheet" href="../assets/bootstrap/css/bootstrap.min.css">
-    <link rel="stylesheet" href="../assets/css/admin.css">
+    <link rel="stylesheet" href="../assets/css/admin_produk.css">
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
 </head>
 

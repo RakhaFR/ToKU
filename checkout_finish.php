@@ -9,7 +9,6 @@ if (!isset($_SESSION['login'])) {
 include 'config/koneksi.php';
 include 'includes/header.php';
 
-// Hanya membaca parameter id transaksi langsung
 $id_order = isset($_GET['id']) ? mysqli_real_escape_string($koneksi, $_GET['id']) : '';
 
 if (empty($id_order)) {
@@ -17,7 +16,7 @@ if (empty($id_order)) {
     exit;
 }
 
-// Ambil data satu baris transaksi saja dari database
+
 $query_order = mysqli_query($koneksi, "SELECT * FROM checkoutfinish WHERE no = '$id_order'");
 $order = mysqli_fetch_assoc($query_order);
 

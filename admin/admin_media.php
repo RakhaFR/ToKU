@@ -51,7 +51,7 @@ $query_carousel = mysqli_query($koneksi, "SELECT * FROM carousel ORDER BY no ASC
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kelola Media Utama - Panel Admin</title>
     <link rel="stylesheet" href="../assets/bootstrap/css/bootstrap.min.css">
-    <link rel="stylesheet" href="../assets/css/admin.css">
+    <link rel="stylesheet" href="../assets/css/admin_media.css">
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
 </head>
 <body>
