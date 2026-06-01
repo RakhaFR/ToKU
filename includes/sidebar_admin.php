@@ -68,7 +68,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
             <i class="fas fa-file-invoice me-2"></i> Laporan Order
         </a>
         <hr class="mx-3 text-secondary my-2">
-        <a class="nav-link text-danger mt-3" href="logout.php" onclick="return confirm('Keluar dari panel admin?')">
+        <a class="nav-link text-danger mt-3" href="../logout.php" onclick="return confirm('Keluar dari panel admin?')">
             <i class="fas fa-sign-out-alt me-2"></i> Keluar
         </a>
     </div>

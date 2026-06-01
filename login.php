@@ -28,10 +28,6 @@
                         
                         <button type="submit" name="login" class="btn btn-primary w-100 py-2">Login</button>
                     </form>
-                    
-                    <div class="text-center mt-3">
-                        <a href="index.php" class="text-decoration-none small text-muted">&larr; Kembali ke Utama</a>
-                    </div>
                 </div>
             </div>
         </div>
