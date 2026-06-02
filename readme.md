@@ -1,4 +1,4 @@
-# 🛍️ E-Commerce Web Application
+# 🛍️ E-Commerce Web Application by Rakha
 
 ## Cart & Consolidated Checkout System
 
