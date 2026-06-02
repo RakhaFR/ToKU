@@ -53,11 +53,28 @@ if (isset($_POST['proses_checkout'])) {
 }
 ?>
 
+<style>
+    .produk-overlay-wrapper:hover .produk-caption-layer {
+        opacity: 1;
+        visibility: visible;
+    }
+    .produk-caption-layer {
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+</style>
 <div class="container my-5">
     <div class="row justify-content-center">
         <div class="col-md-5 mb-4">
             <div class="card p-3 shadow-sm text-center">
-                <img src="assets/images/<?php echo $produk['image']; ?>" class="img-fluid mx-auto mb-3" style="max-height: 200px; object-fit: contain;">
+                <div class="position-relative produk-overlay-wrapper overflow-hidden rounded">
+                    <img src="assets/images/<?php echo $produk['image']; ?>" class="img-fluid d-block mx-auto mb-3" style="max-height: 200px; object-fit: contain;">
+
+                    <div class="produk-caption-layer position-absolute top-0 start-0 w-100 h-100 d-flex flex-column justify-content-center align-items-center bg-dark bg-opacity-75 text-white p-3 text-center">
+                        <p class="small mb-0"><?php echo htmlspecialchars($produk['ket']); ?></p>
+                    </div>
+                </div>
                 <h4 class="fw-bold"><?php echo $produk['namaproduk']; ?></h4>
                 <p class="text-muted small"><?php echo $produk['ket']; ?></p>
                 <h3 class="text-primary fw-bold">Rp<?php echo number_format($produk['harga'], 0, ',', '.'); ?></h3>

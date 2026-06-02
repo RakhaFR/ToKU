@@ -8,6 +8,7 @@ include_once 'config/koneksi.php';
 ?>
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16,6 +17,7 @@ include_once 'config/koneksi.php';
     <link rel="stylesheet" href="assets/css/index.css">
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
 </head>
+
 <body class="bg-light">
 
     <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top py-3">
@@ -23,27 +25,29 @@ include_once 'config/koneksi.php';
             <a class="navbar-brand fw-bold text-primary mb-0 me-4" href="index.php">
                 <i class="fas fa-shopping-bag me-2"></i>ToKU
             </a>
-            
+
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            
+
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0 align-items-lg-center">
                     <li class="nav-item">
                         <a class="nav-link fw-semibold" href="index.php">Beranda</a>
                     </li>
-                    
+
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle fw-semibold" href="#" id="dropKat" role="button" data-bs-toggle="dropdown">
                             Kategori Produk
                         </a>
                         <ul class="dropdown-menu">
                             <li><a class="dropdown-item" href="index.php">Semua Produk</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <?php 
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <?php
                             $query_nav_kat = mysqli_query($koneksi, "SELECT * FROM kategori ORDER BY kategori ASC");
-                            while($row_nav_kat = mysqli_fetch_assoc($query_nav_kat)) { 
+                            while ($row_nav_kat = mysqli_fetch_assoc($query_nav_kat)) {
                             ?>
                                 <li>
                                     <a class="dropdown-item" href="index.php?kategori=<?php echo urlencode($row_nav_kat['kode']); ?>">
@@ -71,9 +75,20 @@ include_once 'config/koneksi.php';
                             <i class="fas fa-sign-out-alt me-1"></i> Keluar
                         </a>
                     <?php endif; ?>
+                    <div class="navbar-nav align-items-center gap-3">
+                        <?php if (isset($_SESSION['login']) && isset($_SESSION['user'])): ?>
+                            <span class="navbar-text fw-bold text-dark mb-0">
+                                <i class="fas fa-user-circle me-1"></i> <?php echo htmlspecialchars($_SESSION['user']); ?>
+                            </span>
+                            <a href="logout.php" class="btn btn-outline-danger btn-sm fw-bold px-3" onclick="return confirm('Apakah kamu ingin keluar?')">
+                                <i class="fas fa-sign-out-alt me-1"></i> Keluar
+                            </a>
+                        <?php else: ?>
+                            <a href="login.php" class="btn btn-primary btn-sm fw-bold px-4 rounded-pill">
+                                <i class="fas fa-sign-in-alt me-1"></i> Login
+                            </a>
+                        <?php endif; ?>
+                    </div>
                 </div>
             </div>
-        </div>
     </nav>
-
-    <div class="py-2"></div>
