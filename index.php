@@ -39,7 +39,7 @@ $query_video    = mysqli_query($koneksi, "SELECT * FROM youtube");
 
 
 <div id="carouselExampleCaptions" class="carousel slide custom-carousel mb-5 rounded-0" data-bs-ride="carousel">
-    <div class="carousel-inner>
+    <div class="carousel-inner">
         <?php
         $active = true;
         if (mysqli_num_rows($query_carousel) > 0) {
@@ -51,7 +51,7 @@ $query_video    = mysqli_query($koneksi, "SELECT * FROM youtube");
                     <div class="carousel-caption d-none d-md-block text-start mb-4 px-4">
                         <span class="badge bg-primary mb-2 px-3 py-2 text-uppercase tracking-wider fw-bold fs-8">Rekomendasi Utama</span>
                         <h2 class="fw-bold text-white display-6 mb-2"><?php echo $row_carousel['title']; ?></h2>
-                        <p class="text-white-50 fs-6 mb-0">Dapatkan kualitas produk terbaik dengan promo terbatas minggu ini.</p>
+                        <p class="text-white-50 fs-6 mb-0"><?php echo $row_carousel['caption']; ?></p>
                     </div>
                 </div>
             <?php

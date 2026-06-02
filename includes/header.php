@@ -67,28 +67,19 @@ include_once 'config/koneksi.php';
                 </ul>
 
                 <div class="navbar-nav align-items-center gap-3">
-                    <?php if (isset($_SESSION['user'])): ?>
+                    <?php if (isset($_SESSION['login']) && isset($_SESSION['user'])): ?>
                         <span class="navbar-text fw-bold text-dark mb-0">
                             <i class="fas fa-user-circle me-1"></i> <?php echo htmlspecialchars($_SESSION['user']); ?>
                         </span>
                         <a href="logout.php" class="btn btn-outline-danger btn-sm fw-bold px-3" onclick="return confirm('Apakah kamu ingin keluar?')">
                             <i class="fas fa-sign-out-alt me-1"></i> Keluar
                         </a>
+                    <?php else: ?>
+                        <a href="login.php" class="btn btn-primary btn-sm fw-bold px-4 rounded-pill">
+                            <i class="fas fa-sign-in-alt me-1"></i> Login
+                        </a>
                     <?php endif; ?>
-                    <div class="navbar-nav align-items-center gap-3">
-                        <?php if (isset($_SESSION['login']) && isset($_SESSION['user'])): ?>
-                            <span class="navbar-text fw-bold text-dark mb-0">
-                                <i class="fas fa-user-circle me-1"></i> <?php echo htmlspecialchars($_SESSION['user']); ?>
-                            </span>
-                            <a href="logout.php" class="btn btn-outline-danger btn-sm fw-bold px-3" onclick="return confirm('Apakah kamu ingin keluar?')">
-                                <i class="fas fa-sign-out-alt me-1"></i> Keluar
-                            </a>
-                        <?php else: ?>
-                            <a href="login.php" class="btn btn-primary btn-sm fw-bold px-4 rounded-pill">
-                                <i class="fas fa-sign-in-alt me-1"></i> Login
-                            </a>
-                        <?php endif; ?>
-                    </div>
                 </div>
             </div>
+        </div>
     </nav>

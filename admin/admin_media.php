@@ -22,6 +22,7 @@ if (isset($_POST['proses_edit_video'])) {
 if (isset($_POST['proses_edit_carousel'])) {
     $id_carousel = mysqli_real_escape_string($koneksi, $_POST['id_carousel']);
     $title_car   = mysqli_real_escape_string($koneksi, $_POST['title']);
+    $caption_car = mysqli_real_escape_string($koneksi, $_POST['caption']);
     
     if ($_FILES['image_file']['name'] != "") {
         $filename = $_FILES['image_file']['name'];
@@ -29,10 +30,10 @@ if (isset($_POST['proses_edit_carousel'])) {
         $folder   = "../assets/images/" . $filename;
         
         if (move_uploaded_file($tempname, $folder)) {
-            $update_car = mysqli_query($koneksi, "UPDATE carousel SET title='$title_car', namapic='$filename' WHERE no='$id_carousel'");
+            $update_car = mysqli_query($koneksi, "UPDATE carousel SET title='$title_car', namapic='$filename', caption='$caption_car' WHERE no='$id_carousel'");
         }
     } else {
-        $update_car = mysqli_query($koneksi, "UPDATE carousel SET title='$title_car' WHERE no='$id_carousel'");
+        $update_car = mysqli_query($koneksi, "UPDATE carousel SET title='$title_car', caption='$caption_car' WHERE no='$id_carousel'");
     }
 
     if ($update_car) {
@@ -78,7 +79,8 @@ $query_carousel = mysqli_query($koneksi, "SELECT * FROM carousel ORDER BY no ASC
                                 <tr>
                                     <th width="8%" class="ps-3">No</th>
                                     <th width="18%">Pratinjau</th>
-                                    <th width="59%">Judul / Keterangan Promosi Banner</th>
+                                    <th width="44%">Judul / Keterangan Promosi Banner</th>
+                                    <th width="15%">Caption</th>
                                     <th width="15%" class="text-center">Aksi</th>
                                 </tr>
                             </thead>
@@ -90,10 +92,12 @@ $query_carousel = mysqli_query($koneksi, "SELECT * FROM carousel ORDER BY no ASC
                                         <td class="ps-3 text-secondary fw-bold">#<?php echo $no_c++; ?></td>
                                         <td><img src="../assets/images/<?php echo $row_c['namapic']; ?>" class="rounded-3 border" style="width: 80px; height: 45px; object-fit: cover;"></td>
                                         <td><span class="fw-semibold text-dark"><?php echo htmlspecialchars($row_c['title']); ?></span></td>
+                                        <td><span class="badge bg-secondary"><?php echo htmlspecialchars($row_c['caption']); ?></span></td>
                                         <td class="text-center">
                                             <button type="button" class="btn btn-sm btn-outline-primary rounded-3 px-3 fw-semibold btn-edit-carousel"
                                                 data-id="<?php echo $row_c['no']; ?>"
                                                 data-title="<?php echo htmlspecialchars($row_c['title']); ?>"
+                                                data-caption="<?php echo htmlspecialchars($row_c['caption']); ?>"
                                                 data-img="<?php echo $row_c['namapic']; ?>">
                                                 <i class="fas fa-edit me-1"></i>Edit
                                             </button>
@@ -147,7 +151,6 @@ $query_carousel = mysqli_query($koneksi, "SELECT * FROM carousel ORDER BY no ASC
         </div>
     </div>
 
-    <!-- MODAL VIDEO -->
     <div class="modal fade" id="modalEditVideo" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow" style="border-radius: 14px;">
@@ -176,7 +179,6 @@ $query_carousel = mysqli_query($koneksi, "SELECT * FROM carousel ORDER BY no ASC
         </div>
     </div>
 
-    <!-- MODAL CAROUSEL BANNER -->
     <div class="modal fade" id="modalEditCarousel" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow" style="border-radius: 14px;">
@@ -194,6 +196,10 @@ $query_carousel = mysqli_query($koneksi, "SELECT * FROM carousel ORDER BY no ASC
                         <div class="mb-3">
                             <label class="form-label small fw-bold text-secondary d-block">Pilih Gambar Banner Baru (Kosongkan jika tidak diganti)</label>
                             <input type="file" name="image_file" class="form-control rounded-3" accept="image/*" onchange="readImg(this)">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-secondary">Caption Banner</label>
+                            <input type="text" name="caption" id="edit_caption_carousel" class="form-control rounded-3" required>
                         </div>
                         <div class="text-center border p-2 rounded bg-light">
                             <small class="text-muted d-block mb-1">Pratinjau Spanduk:</small>
@@ -236,6 +242,7 @@ $query_carousel = mysqli_query($koneksi, "SELECT * FROM carousel ORDER BY no ASC
             btn.addEventListener('click', function() {
                 document.getElementById('edit_id_carousel').value = this.getAttribute('data-id');
                 document.getElementById('edit_title_carousel').value = this.getAttribute('data-title');
+                document.getElementById('edit_caption_carousel').value = this.getAttribute('data-caption'); // Sekarang data-caption akan terbaca dengan benar
                 document.getElementById('preview_img_carousel').src = "../assets/images/" + this.getAttribute('data-img');
                 modalEditCar.show();
             });
