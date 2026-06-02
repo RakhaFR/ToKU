@@ -5,6 +5,10 @@ if (session_status() === PHP_SESSION_NONE) {
 
 // include_once menjamin VS Code tidak merah dan mencegah bentrok Error 500
 include_once 'config/koneksi.php';
+
+$data = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT * FROM login WHERE user = '" . mysqli_real_escape_string($koneksi, $_SESSION['user']) . "'"));
+$fulluser = $data['user'];
+$username = explode("@", $fulluser)[0];
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -69,7 +73,8 @@ include_once 'config/koneksi.php';
                 <div class="navbar-nav align-items-center gap-3">
                     <?php if (isset($_SESSION['login']) && isset($_SESSION['user'])): ?>
                         <span class="navbar-text fw-bold text-dark mb-0">
-                            <i class="fas fa-user-circle me-1"></i> <?php echo htmlspecialchars($_SESSION['user']); ?>
+                            <i class="fas fa-user-circle me-1"></i>
+                            <?php echo htmlspecialchars($username); ?>
                         </span>
                         <a href="logout.php" class="btn btn-outline-danger btn-sm fw-bold px-3" onclick="return confirm('Apakah kamu ingin keluar?')">
                             <i class="fas fa-sign-out-alt me-1"></i> Keluar

@@ -27,7 +27,7 @@ if (isset($_POST['proses_checkout'])) {
     $harga       = $produk['harga'];
     $qty         = (int)$_POST['qty'];
     $total_harga = $harga * $qty;
-    $invoice     = "INV-" . rand(10000, 99999);
+    $invoice     = "INV-" . date("Ymd") .  "-" . rand(10000, 99999);
 
     if (empty(trim($pembeli)) || empty(trim($rekbank))) {
         echo "<script>
@@ -51,6 +51,10 @@ if (isset($_POST['proses_checkout'])) {
         die("Gagal menyimpan transaksi: " . mysqli_error($koneksi));
     }
 }
+
+$data = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT * FROM login WHERE user = '" . mysqli_real_escape_string($koneksi, $_SESSION['user']) . "'"));
+$fulluser = $data['user'];
+$username = explode("@", $fulluser)[0];
 ?>
 
 <style>
@@ -91,7 +95,7 @@ if (isset($_POST['proses_checkout'])) {
                     </div>
                     <div class="mb-3">
                         <label class="form-label small fw-bold">Nama Pembeli</label>
-                        <input type="text" name="pembeli" class="form-control" placeholder="Masukkan nama Anda" required>
+                        <input type="text" name="pembeli" class="form-control" placeholder="Masukkan nama Anda" required value="<?php echo isset($_SESSION['user']) ? htmlspecialchars(explode("@", $_SESSION['user'])[0]) : ''; ?>">
                     </div>
                     <div class="mb-3">
                         <label class="form-label small fw-bold">Metode Pembayaran</label>
