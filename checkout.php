@@ -37,8 +37,8 @@ if (isset($_POST['proses_checkout'])) {
         exit;
     }
 
-    $query_insert = "INSERT INTO checkoutfinish (namabarang, pembeli, invoice, rekbank, harga, qty, total_harga) 
-                     VALUES ('$namabarang', '$pembeli', '$invoice', '$rekbank', '$harga', '$qty', '$total_harga')";
+    $query_insert = "INSERT INTO checkoutfinish (namabarang, pembeli, invoice, rekbank, harga, qty, total_harga, tanggal) 
+                 VALUES ('$namabarang', '$pembeli', '$invoice', '$rekbank', '$harga', '$qty', '$total_harga', NOW())";
 
     if (mysqli_query($koneksi, $query_insert)) {
         $id_terakhir = mysqli_insert_id($koneksi);

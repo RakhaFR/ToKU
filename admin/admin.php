@@ -1,5 +1,8 @@
 <?php
-session_start();
+// Mencegah error jika session sudah dimulai di file include lain
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 if (!isset($_SESSION['login']) || $_SESSION['status'] != 0) {
     header("Location: ../login.php");
@@ -9,13 +12,62 @@ if (!isset($_SESSION['login']) || $_SESSION['status'] != 0) {
 include '../config/koneksi.php';
 /** @var mysqli $koneksi */
 
+// 1. Hitung Total Jenis Produk
 $res_produk = mysqli_query($koneksi, "SELECT COUNT(*) as total FROM produk");
-$tot_produk = mysqli_fetch_assoc($res_produk)['total'] ?? 0;
+$tot_produk = $res_produk ? (mysqli_fetch_assoc($res_produk)['total'] ?? 0) : 0;
 
+// 2. Hitung Total Transaksi & Total Pendapatan Keseluruhan
 $res_transaksi = mysqli_query($koneksi, "SELECT COUNT(*) as total, SUM(total_harga) as pendapatan FROM checkoutfinish");
-$data_trans = mysqli_fetch_assoc($res_transaksi);
-$tot_transaksi = $data_trans['total'] ?? 0;
-$tot_pendapatan = $data_trans['pendapatan'] ?? 0;
+$tot_transaksi = 0;
+$tot_pendapatan = 0;
+
+if ($res_transaksi) {
+    $data_trans = mysqli_fetch_assoc($res_transaksi);
+    $tot_transaksi = $data_trans['total'] ?? 0;
+    $tot_pendapatan = $data_trans['pendapatan'] ?? 0;
+}
+
+// 3. PROSES DATA GRAFIK: Hitung Pendapatan per Hari (Senin - Minggu)
+$pendapatan_harian = [
+    'Senin'   => 0,
+    'Selasa'  => 0,
+    'Rabu'    => 0,
+    'Kamis'   => 0,
+    'Jumat'   => 0,
+    'Sabtu'   => 0,
+    'Minggu'  => 0
+];
+
+// CATATAN: Jika nama kolom tanggalmu di database bukan 'tanggal', ganti kata 'tanggal' di bawah ini:
+$query_hari = mysqli_query($koneksi, "
+    SELECT 
+        DAYNAME(tanggal) as nama_hari, 
+        SUM(total_harga) as total 
+    FROM checkoutfinish 
+    WHERE WEEK(tanggal, 1) = WEEK(CURDATE(), 1) AND YEAR(tanggal) = YEAR(CURDATE())
+    GROUP BY DAYOFWEEK(tanggal)
+");
+
+// Array bantuan penterjemah hari bahasa Inggris ke Indonesia
+$hari_indo = [
+    'Monday'    => 'Senin',
+    'Tuesday'   => 'Selasa',
+    'Wednesday' => 'Rabu',
+    'Thursday'  => 'Kamis',
+    'Friday'    => 'Jumat',
+    'Saturday'  => 'Sabtu',
+    'Sunday'    => 'Minggu'
+];
+
+if ($query_hari) {
+    while ($row = mysqli_fetch_assoc($query_hari)) {
+        $hari_eng = $row['nama_hari'];
+        if (isset($hari_indo[$hari_eng])) {
+            $nama_hari_indo = $hari_indo[$hari_eng];
+            $pendapatan_harian[$nama_hari_indo] = (int)$row['total'];
+        }
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -82,9 +134,9 @@ $tot_pendapatan = $data_trans['pendapatan'] ?? 0;
 
             <div class="card card-custom bg-white p-3 p-md-4 shadow-sm border border-light mb-3">
                 <div class="mb-2">
-                    <h5 class="fw-bold text-dark mb-1"><i class="fas fa-chart-line text-primary me-2"></i>Grafik Arus Performa Omset</h5>
+                    <h5 class="fw-bold text-dark mb-1"><i class="fas fa-chart-line text-primary me-2"></i>Grafik Arus Performa Omset (Minggu Ini)</h5>
                 </div>
-                <div class="chart-container">
+                <div class="chart-container" style="position: relative; height:300px;">
                     <canvas id="canvasOmset"></canvas>
                 </div>
             </div>
@@ -101,8 +153,16 @@ $tot_pendapatan = $data_trans['pendapatan'] ?? 0;
             data: {
                 labels: ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'],
                 datasets: [{
-                    label: 'Estimasi Pendapatan harian',
-                    data: [0, 150000, 300000, <?php echo $tot_pendapatan; ?>, <?php echo $tot_pendapatan + 50000; ?>, <?php echo $tot_pendapatan + 120000; ?>, <?php echo $tot_pendapatan + 200000; ?>],
+                    label: 'Pendapatan Hari Ini',
+                    data: [
+                        <?php echo $pendapatan_harian['Senin']; ?>,
+                        <?php echo $pendapatan_harian['Selasa']; ?>,
+                        <?php echo $pendapatan_harian['Rabu']; ?>,
+                        <?php echo $pendapatan_harian['Kamis']; ?>,
+                        <?php echo $pendapatan_harian['Jumat']; ?>,
+                        <?php echo $pendapatan_harian['Sabtu']; ?>,
+                        <?php echo $pendapatan_harian['Minggu']; ?>
+                    ],
                     backgroundColor: 'rgba(13, 110, 253, 0.06)',
                     borderColor: '#0d6efd',
                     borderWidth: 2.5,
@@ -117,11 +177,28 @@ $tot_pendapatan = $data_trans['pendapatan'] ?? 0;
                 plugins: {
                     legend: {
                         display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let value = context.raw;
+                                return ' Pendapatan: Rp ' + value.toLocaleString('id-ID');
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return 'Rp ' + value.toLocaleString('id-ID');
+                            }
+                        }
                     }
                 }
             }
         });
     </script>
 </body>
-
 </html>
