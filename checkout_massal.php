@@ -22,10 +22,24 @@ if (!isset($_SESSION['cart']) || empty($_SESSION['cart'])) {
 // PROSES SIMPAN KE DATABASE (CHECKOUT FINISH)
 if (isset($_POST['proses_checkout_massal'])) {
     $pembeli = mysqli_real_escape_string($koneksi, $_POST['pembeli']);
-    $rekbank  = mysqli_real_escape_string($koneksi, $_POST['rekbank']);
+    
+    // Mengambil pilihan bank dan nomor rekening lalu menggabungkannya
+    $pilihan_bank = isset($_POST['pilihan_bank']) ? trim($_POST['pilihan_bank']) : '';
+    $nomor_rek    = isset($_POST['nomor_rek']) ? trim($_POST['nomor_rek']) : '';
+    $rekbank_gabung = "Transfer " . $pilihan_bank . " - " . $nomor_rek;
+    
+    $rekbank = mysqli_real_escape_string($koneksi, $rekbank_gabung);
 
     // Membuat nomor invoice unik untuk menandai bahwa item-item ini dibeli barengan
     $invoice = "INV-" . date('Ymd') . "-" . strtoupper(substr(md5(time()), 0, 5));
+
+    if (empty(trim($pembeli)) || empty($pilihan_bank) || empty($nomor_rek)) {
+        echo "<script>
+                alert('Gagal! Nama Pembeli, Pilihan Bank, dan Nomor Rekening wajib diisi.');
+                window.history.back();
+              </script>";
+        exit;
+    }
 
     $sukses_simpan = true;
     $pesan_error = "";
@@ -44,8 +58,8 @@ if (isset($_POST['proses_checkout_massal'])) {
             $total_harga = $harga * $qty;
 
             // Query INSERT sesuai database ter-update
-            $insert_query = "INSERT INTO checkoutfinish (namabarang, pembeli, invoice, rekbank, harga, qty, total_harga) 
-                             VALUES ('$namabarang', '$pembeli', '$invoice', '$rekbank', '$harga', '$qty', '$total_harga')";
+            $insert_query = "INSERT INTO checkoutfinish (namabarang, pembeli, invoice, rekbank, harga, qty, total_harga, tanggal) 
+                             VALUES ('$namabarang', '$pembeli', '$invoice', '$rekbank', '$harga', '$qty', '$total_harga', NOW())";
 
             if (!mysqli_query($koneksi, $insert_query)) {
                 $sukses_simpan = false;
@@ -54,7 +68,7 @@ if (isset($_POST['proses_checkout_massal'])) {
         }
     }
 
-    // REDIRECT SELESAI - Diperbaiki agar string concatenation aman dari bug browser
+    // REDIRECT SELESAI - Diarahkan dengan parameter invoice menuju checkout_finish
     if ($sukses_simpan) {
         unset($_SESSION['cart']); // Kosongkan session keranjang
         echo "<script>
@@ -116,13 +130,25 @@ $grand_total = 0;
             <div class="card shadow-sm border-0 rounded-4 p-4">
                 <form action="" method="POST">
                     <div class="mb-3">
-                        <label for="pembeli" class="form-label fw-bold">Nama Pembeli</label>
-                        <input type="text" name="pembeli" id="pembeli" class="form-control" value="<?php echo isset($_SESSION['user']) ? htmlspecialchars($_SESSION['user']) : ''; ?>" placeholder="Nama lengkap pembeli" required>
+                        <label class="form-label fw-bold">Nama Pembeli</label>
+                        <input type="text" name="pembeli" class="form-control" value="<?php echo isset($_SESSION['user']) ? htmlspecialchars(explode("@", $_SESSION['user'])[0]) : ''; ?>" placeholder="Nama lengkap pembeli" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Pilih Bank Pembayaran</label>
+                        <select name="pilihan_bank" class="form-select" required>
+                            <option value="" disabled selected>-- Pilih Bank --</option>
+                            <option value="BCA">BCA (Bank Central Asia)</option>
+                            <option value="Mandiri">Mandiri</option>
+                            <option value="BRI">BRI (Bank Rakyat Indonesia)</option>
+                            <option value="BNI">BNI (Bank Negara Indonesia)</option>
+                            <option value="BSI">BSI (Bank Syariah Indonesia)</option>
+                        </select>
                     </div>
 
                     <div class="mb-4">
-                        <label for="rekbank" class="form-label fw-bold">Rekening Bank / Metode Pembayaran</label>
-                        <input type="text" name="rekbank" id="rekbank" class="form-control" placeholder="Contoh: Transfer Mandiri 133000xxxx" required>
+                        <label class="form-label fw-bold">Nomor Rekening Anda</label>
+                        <input type="text" name="nomor_rek" class="form-control" placeholder="Masukkan nomor rekening pembayaran" oninput="this.value = this.value.replace(/[^0-9]/g, '')" required>
                         <div class="form-text small text-muted">Satu metode pembayaran ini akan digunakan untuk melunasi seluruh item di atas.</div>
                     </div>
 
