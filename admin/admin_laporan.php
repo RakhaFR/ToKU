@@ -7,7 +7,19 @@ if (!isset($_SESSION['login']) || $_SESSION['status'] != 0) {
 include '../config/koneksi.php';
 /** @var mysqli $koneksi */
 
-$query_laporan = mysqli_query($koneksi, "SELECT * FROM checkoutfinish ORDER BY no DESC");
+// --- KONFIGURASI PAGINATION (PAGING) ---
+$limit = 10; // Jumlah data per halaman
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+if ($page < 1) $page = 1;
+$start = ($page - 1) * $limit;
+
+// Hitung total seluruh data transaksi
+$total_query = mysqli_query($koneksi, "SELECT COUNT(*) AS total FROM checkoutfinish");
+$total_data = mysqli_fetch_assoc($total_query)['total'];
+$total_pages = ceil($total_data / $limit);
+
+// Ambil data transaksi khusus untuk halaman aktif saat ini
+$query_laporan = mysqli_query($koneksi, "SELECT * FROM checkoutfinish ORDER BY no DESC LIMIT $start, $limit");
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -22,48 +34,45 @@ $query_laporan = mysqli_query($koneksi, "SELECT * FROM checkoutfinish ORDER BY n
 <body>
 
     <div class="wrapper">
-    <?php include '../includes/sidebar_admin.php'; ?>
+        <?php include '../includes/sidebar_admin.php'; ?>
 
         <div class="main-content">
             <div class="d-flex justify-content-between align-items-center mb-3 bg-white p-3 rounded-4 shadow-sm border border-light admin-welcome-box">
                 <div>
                     <h4 class="fw-bold text-dark mb-0">Laporan Transaksi</h4>
-                    <p class="text-muted small mb-0">Riwayat terekam data invoice riwayat pesanan pembeli.</p>
+                    <p class="text-muted small mb-0">Total keseluruhan data transaksi: <strong><?php echo $total_data; ?></strong> invoice.</p>
                 </div>
-                <a href="../index.php" target="_blank" class="btn btn-outline-primary btn-sm rounded-3 fw-bold px-3 d-none d-sm-block"><i class="fas fa-external-link-alt me-1"></i> Kunjungi Toko</a>
             </div>
 
-            <div class="card card-custom bg-white shadow-sm border border-light mb-2">
-                <div class="p-3 p-md-4 border-bottom">
-                    <span class="fw-bold text-dark"><i class="fas fa-file-invoice-dollar text-success me-2"></i>Arsip Transaksi Selesai</span>
-                </div>
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4 border border-light">
                 <div class="card-body p-0">
-                    <div class="table-responsive-custom">
-                        <table class="table table-hover mb-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0 custom-admin-table text-center">
                             <thead>
                                 <tr>
                                     <th width="5%">No</th>
-                                    <th width="15%">No. Invoice</th>
-                                    <th width="25%">Nama Barang</th>
-                                    <th width="15%">Pembeli</th>
-                                    <th width="15%">Rek. Bank</th>
-                                    <th width="10%">Harga</th>
-                                    <th width="5%" class="text-center">QTY</th>
-                                    <th width="10%" class="text-end">Total</th>
+                                    <th>No. Invoice</th>
+                                    <th>Tanggal Transaksi</th>
+                                    <th>Nama Pembeli</th>
+                                    <th width="20%">Metode Bayar</th>
+                                    <th>Harga Satuan</th>
+                                    <th>QTY</th>
+                                    <th class="text-end">Total Bayar</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <?php 
-                                $i = 1;
-                                if(mysqli_num_rows($query_laporan) > 0) {
+                                if (mysqli_num_rows($query_laporan) > 0) {
+                                    // Variabel nomor urut dinamis mengikuti halaman aktif
+                                    $no = $start + 1;
                                     while ($lap = mysqli_fetch_assoc($query_laporan)) {
-                                    ?>
+                                ?>
                                         <tr>
-                                            <td class="text-muted fw-semibold"><?php echo $i++; ?></td>
-                                            <td><span class="badge bg-light text-dark border p-2 fw-bold" style="font-size: 0.78rem;"><?php echo htmlspecialchars($lap['invoice']); ?></span></td>
-                                            <td><strong class="text-dark d-block text-wrap" style="min-width: 140px;"><?php echo htmlspecialchars($lap['namabarang']); ?></strong></td>
-                                            <td><span class="text-dark text-nowrap"><?php echo htmlspecialchars($lap['pembeli']); ?></span></td>
-                                            <td><small class="text-muted text-wrap d-block" style="min-width: 100px; font-size: 0.8rem;"><?php echo htmlspecialchars($lap['rekbank']); ?></small></td>
+                                            <td><span class="text-secondary fw-semibold"><?php echo $no++; ?></span></td>
+                                            <td><span class="badge bg-light text-primary border border-primary-subtle px-2 py-1.5 font-monospace fs-8"><?php echo htmlspecialchars($lap['invoice']); ?></span></td>
+                                            <td><span class="text-muted small text-nowrap"><?php echo date('d M Y, H:i', strtotime($lap['tanggal'])); ?></span></td>
+                                            <td><span class="text-dark text-nowrap fw-semibold"><?php echo htmlspecialchars($lap['pembeli']); ?></span></td>
+                                            <td><small class="text-muted text-wrap d-block text-start" style="min-width: 100px; font-size: 0.8rem;"><?php echo htmlspecialchars($lap['rekbank']); ?></small></td>
                                             <td class="text-nowrap">Rp<?php echo number_format($lap['harga'], 0, ',', '.'); ?></td>
                                             <td class="text-center fw-bold text-dark"><?php echo $lap['qty']; ?></td>
                                             <td class="text-end fw-bold text-success text-nowrap">Rp<?php echo number_format($lap['total_harga'], 0, ',', '.'); ?></td>
@@ -79,6 +88,33 @@ $query_laporan = mysqli_query($koneksi, "SELECT * FROM checkoutfinish ORDER BY n
                     </div>
                 </div>
             </div>
-        </div> </div> <script src="../assets/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+            <?php if ($total_pages > 1): ?>
+                <nav aria-label="Page navigation" class="mt-4 mb-5">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item <?php echo ($page <= 1) ? 'disabled' : ''; ?>">
+                            <a class="page-link" href="admin_laporan.php?page=<?php echo $page - 1; ?>">
+                                <i class="fas fa-angle-left small"></i> Sebelumnya
+                            </a>
+                        </li>
+                        
+                        <?php for ($i = 1; $i <= $total_pages; $i++): ?>
+                            <li class="page-item <?php echo ($page == $i) ? 'active' : ''; ?>">
+                                <a class="page-link fw-semibold" href="admin_laporan.php?page=<?php echo $i; ?>"><?php echo $i; ?></a>
+                            </li>
+                        <?php endfor; ?>
+                        
+                        <li class="page-item <?php echo ($page >= $total_pages) ? 'disabled' : ''; ?>">
+                            <a class="page-link" href="admin_laporan.php?page=<?php echo $page + 1; ?>">
+                                Berikutnya <i class="fas fa-angle-right small"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            <?php endif; ?>
+
+        </div> 
+    </div> 
+    <script src="../assets/bootstrap/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

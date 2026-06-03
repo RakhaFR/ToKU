@@ -48,9 +48,32 @@ if (isset($_SESSION['cart']) && !empty($_SESSION['cart'])) {
                     <li class="nav-item">
                         <a class="nav-link active fw-semibold" aria-current="page" href="index.php">Beranda</a>
                     </li>
+                    
+                    <li class="nav-item dropdown ms-lg-2">
+                        <a class="nav-link dropdown-toggle fw-semibold" href="#" id="dropKat" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Kategori Produk
+                        </a>
+                        <ul class="dropdown-menu shadow-sm border-0 mt-2">
+                            <li><a class="dropdown-item" href="index.php">Semua Produk</a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <?php
+                            $query_nav_kat = mysqli_query($koneksi, "SELECT * FROM kategori ORDER BY kategori ASC");
+                            while ($row_nav_kat = mysqli_fetch_assoc($query_nav_kat)) {
+                            ?>
+                                <li>
+                                    <a class="dropdown-item" href="index.php?kategori=<?php echo urlencode($row_nav_kat['kode']); ?>">
+                                        <?php echo htmlspecialchars($row_nav_kat['kategori']); ?>
+                                    </a>
+                                </li>
+                            <?php } ?>
+                        </ul>
+                    </li>
+
                     <li class="nav-item ms-lg-3 mt-2 mt-lg-0">
                         <form action="index.php" method="GET" class="d-flex">
-                            <input class="form-control form-control-sm me-2" type="search" name=\"search\" placeholder="Cari nama produk..." style="width: 220px;" value="<?php echo isset($_GET['search']) ? htmlspecialchars($_GET['search']) : ''; ?>">
+                            <input class="form-control form-control-sm me-2" type="search" name="search" placeholder="Cari nama produk..." style="width: 220px;" value="<?php echo isset($_GET['search']) ? htmlspecialchars($_GET['search']) : ''; ?>">
                             <button class="btn btn-outline-primary btn-sm fw-bold" type="submit">Cari</button>
                         </form>
                     </li>

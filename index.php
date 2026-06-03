@@ -14,11 +14,20 @@ if (isset($_GET['search']) && !empty(trim($_GET['search']))) {
     $info_pencarian = "Hasil pencarian untuk: <strong>\"" . htmlspecialchars($keyword) . "\"</strong>";
     $url_params = "&search=" . urlencode($keyword);
 }
+// Bagian Filter Kategori yang sudah diperbaiki untuk mengambil nama asli kategori
 elseif (isset($_GET['kategori']) && !empty(trim($_GET['kategori']))) {
     $kat_pilihan = mysqli_real_escape_string($koneksi, trim($_GET['kategori']));
     $where_clause = "WHERE produk.kode = '$kat_pilihan'";
-    $info_pencarian = "Menampilkan Kategori: <strong>\"" . htmlspecialchars($kat_pilihan) . "\"</strong>";
     $url_params = "&kategori=" . urlencode($kat_pilihan);
+    
+    // Fetching nama kategori asli dari database berdasarkan kodenya
+    $query_nama_kat = mysqli_query($koneksi, "SELECT kategori FROM kategori WHERE kode = '$kat_pilihan'");
+    $data_kat = mysqli_fetch_assoc($query_nama_kat);
+    
+    // Jika data kategori ditemukan di database, pakai namanya. Jika tidak, pakai kodenya sebagai cadangan.
+    $nama_kategori_tampil = $data_kat ? $data_kat['kategori'] : $kat_pilihan;
+    
+    $info_pencarian = "Menampilkan Kategori: <strong>\"" . htmlspecialchars($nama_kategori_tampil) . "\"</strong>";
 }
 
 $limit = 8;
@@ -76,6 +85,7 @@ $query_video    = mysqli_query($koneksi, "SELECT * FROM youtube");
         <span class="visually-hidden">Next</span>
     </button>
 </div>
+
 <div class="container my-5">
     <?php if (!empty($info_pencarian)): ?>
         <div class="alert alert-info d-flex justify-content-between align-items-center mb-4 shadow-sm border-0">
