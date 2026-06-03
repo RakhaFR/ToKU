@@ -1,42 +1,43 @@
 <?php
 session_start();
 
-// if (!isset($_SESSION['login'])) {
-//     header("Location: login.php");
-//     exit;
-// }
-
-
 include_once 'config/koneksi.php';
 include 'includes/header.php';
 
 $where_clause = "";
 $info_pencarian = "";
+$url_params = "";
 
-// 1. Kondisi jika Search Engine Header Aktif
 if (isset($_GET['search']) && !empty(trim($_GET['search']))) {
     $keyword = mysqli_real_escape_string($koneksi, trim($_GET['search']));
     $where_clause = "WHERE produk.namaproduk LIKE '%$keyword%'";
     $info_pencarian = "Hasil pencarian untuk: <strong>\"" . htmlspecialchars($keyword) . "\"</strong>";
+    $url_params = "&search=" . urlencode($keyword);
 }
-// 2. Kondisi jika Filter Kategori dari Dropdown Aktif
 elseif (isset($_GET['kategori']) && !empty(trim($_GET['kategori']))) {
     $kat_pilihan = mysqli_real_escape_string($koneksi, trim($_GET['kategori']));
     $where_clause = "WHERE produk.kode = '$kat_pilihan'";
     $info_pencarian = "Menampilkan Kategori: <strong>\"" . htmlspecialchars($kat_pilihan) . "\"</strong>";
+    $url_params = "&kategori=" . urlencode($kat_pilihan);
 }
+
+$limit = 8;
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+$start = ($page > 1) ? ($page * $limit) - $limit : 0;
+
+$total_query = mysqli_query($koneksi, "SELECT COUNT(*) AS total FROM produk $where_clause");
+$total_data = mysqli_fetch_assoc($total_query)['total'];
+$total_pages = ceil($total_data / $limit);
 
 $query_produk = mysqli_query($koneksi, "SELECT produk.*, kategori.kategori 
                                         FROM produk 
                                         LEFT JOIN kategori ON produk.kode = kategori.kode 
                                         $where_clause 
-                                        ORDER BY produk.no ASC");
+                                        ORDER BY produk.no ASC LIMIT $start, $limit");
 
 $query_carousel = mysqli_query($koneksi, "SELECT * FROM carousel");
 $query_video    = mysqli_query($koneksi, "SELECT * FROM youtube");
 ?>
-
-
 
 <div id="carouselExampleCaptions" class="carousel slide custom-carousel mb-5 rounded-0" data-bs-ride="carousel">
     <div class="carousel-inner">
@@ -84,7 +85,7 @@ $query_video    = mysqli_query($koneksi, "SELECT * FROM youtube");
     <?php endif; ?>
 
     <h4 class="fw-bold mb-3">Katalog Produk Unggulan</h4>
-    <div class="row row-cols-1 row-cols-md-4 g-4 mb-5">
+    <div class="row row-cols-1 row-cols-md-4 g-4 mb-4">
         <?php
         if (mysqli_num_rows($query_produk) > 0) {
             while ($row_produk = mysqli_fetch_assoc($query_produk)) {
@@ -113,6 +114,24 @@ $query_video    = mysqli_query($koneksi, "SELECT * FROM youtube");
             </div>
         <?php } ?>
     </div>
+
+    <?php if ($total_pages > 1): ?>
+        <nav aria-label="Page navigation" class="mb-5">
+            <ul class="pagination justify-content-center">
+                <li class="page-item <?php echo ($page <= 1) ? 'disabled' : ''; ?>">
+                    <a class="page-link" href="index.php?page=<?php echo $page - 1 . $url_params; ?>">Sebelumnya</a>
+                </li>
+                <?php for ($i = 1; $i <= $total_pages; $i++): ?>
+                    <li class="page-item <?php echo ($page == $i) ? 'active' : ''; ?>">
+                        <a class="page-link" href="index.php?page=<?php echo $i . $url_params; ?>"><?php echo $i; ?></a>
+                    </li>
+                <?php endfor; ?>
+                <li class="page-item <?php echo ($page >= $total_pages) ? 'disabled' : ''; ?>">
+                    <a class="page-link" href="index.php?page=<?php echo $page + 1 . $url_params; ?>">Berikutnya</a>
+                </li>
+            </ul>
+        </nav>
+    <?php endif; ?>
 
     <h4 class="fw-bold mb-5">Review & Panduan Video</h4>
     <div class="row g-4 bg-light p-3 rounded border mb-5">

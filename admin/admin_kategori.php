@@ -6,7 +6,7 @@ if (!isset($_SESSION['login']) || $_SESSION['status'] != 0) {
 }
 include '../config/koneksi.php';
 /** @var mysqli $koneksi */
-// 1. PROSES TAMBAH KATEGORI
+
 if (isset($_POST['proses_tambah_kategori'])) {
     $kode     = mysqli_real_escape_string($koneksi, $_POST['kode']);
     $kategori = mysqli_real_escape_string($koneksi, $_POST['kategori']);
@@ -18,7 +18,6 @@ if (isset($_POST['proses_tambah_kategori'])) {
     }
 }
 
-// 2. PROSES EDIT KATEGORI
 if (isset($_POST['proses_edit_kategori'])) {
     $no       = mysqli_real_escape_string($koneksi, $_POST['no']);
     $kode     = mysqli_real_escape_string($koneksi, $_POST['kode']);
@@ -31,7 +30,6 @@ if (isset($_POST['proses_edit_kategori'])) {
     }
 }
 
-// 3. PROSES DELETE KATEGORI
 if (isset($_GET['hapus_kategori'])) {
     $id_hapus = $_GET['hapus_kategori'];
     $query_hapus = mysqli_query($koneksi, "DELETE FROM kategori WHERE no = '$id_hapus'");
@@ -41,7 +39,15 @@ if (isset($_GET['hapus_kategori'])) {
     }
 }
 
-$query_kategori = mysqli_query($koneksi, "SELECT * FROM kategori ORDER BY no ASC");
+$limit = 10;
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+$start = ($page > 1) ? ($page * $limit) - $limit : 0;
+
+$total_query = mysqli_query($koneksi, "SELECT COUNT(*) AS total FROM kategori");
+$total_data = mysqli_fetch_assoc($total_query)['total'];
+$total_pages = ceil($total_data / $limit);
+
+$query_kategori = mysqli_query($koneksi, "SELECT * FROM kategori ORDER BY no ASC LIMIT $start, $limit");
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -69,7 +75,7 @@ $query_kategori = mysqli_query($koneksi, "SELECT * FROM kategori ORDER BY no ASC
                 </button>
             </div>
 
-            <div class="card card-custom bg-white shadow-sm border border-light mb-2">
+            <div class="card card-custom bg-white shadow-sm border border-light mb-4">
                 <div class="card-body p-0">
                     <div class="table-responsive">
                         <table class="table table-hover align-middle mb-0">
@@ -82,25 +88,33 @@ $query_kategori = mysqli_query($koneksi, "SELECT * FROM kategori ORDER BY no ASC
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php while ($row = mysqli_fetch_assoc($query_kategori)) { ?>
+                                <?php if (mysqli_num_rows($query_kategori) > 0) {
+                                    while ($row = mysqli_fetch_assoc($query_kategori)) { ?>
+                                        <tr>
+                                            <td><strong>#<?php echo $row['no']; ?></strong></td>
+                                            <td><span class="badge bg-secondary px-3 py-2 fs-6 fw-bold"><?php echo htmlspecialchars($row['kode']); ?></span></td>
+                                            <td class="fw-bold text-dark"><?php echo htmlspecialchars($row['kategori']); ?></td>
+                                            <td class="text-center">
+                                                <div class="d-flex justify-content-center gap-1">
+                                                    <button type="button" class="btn btn-sm btn-outline-warning px-2 py-1 btn-edit-kategori"
+                                                            data-id="<?php echo $row['no']; ?>"
+                                                            data-kode="<?php echo htmlspecialchars($row['kode']); ?>"
+                                                            data-nama="<?php echo htmlspecialchars($row['kategori']); ?>">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                    <button type="button" class="btn btn-sm btn-outline-danger px-2 py-1 btn-delete-kategori" 
+                                                            data-id="<?php echo $row['no']; ?>"
+                                                            data-nama="<?php echo htmlspecialchars($row['kategori']); ?>">
+                                                        <i class="fas fa-trash-alt"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    <?php }
+                                } else { ?>
                                     <tr>
-                                        <td><strong>#<?php echo $row['no']; ?></strong></td>
-                                        <td><span class="badge bg-secondary px-3 py-2 fs-6 fw-bold"><?php echo htmlspecialchars($row['kode']); ?></span></td>
-                                        <td class="fw-bold text-dark"><?php echo htmlspecialchars($row['kategori']); ?></td>
-                                        <td class="text-center">
-                                            <div class="d-flex justify-content-center gap-1">
-                                                <button type="button" class="btn btn-sm btn-outline-warning px-2 py-1 btn-edit-kategori"
-                                                        data-id="<?php echo $row['no']; ?>"
-                                                        data-kode="<?php echo htmlspecialchars($row['kode']); ?>"
-                                                        data-nama="<?php echo htmlspecialchars($row['kategori']); ?>">
-                                                    <i class="fas fa-edit"></i>
-                                                </button>
-                                                <button type="button" class="btn btn-sm btn-outline-danger px-2 py-1 btn-delete-kategori" 
-                                                        data-id="<?php echo $row['no']; ?>"
-                                                        data-nama="<?php echo htmlspecialchars($row['kategori']); ?>">
-                                                    <i class="fas fa-trash-alt"></i>
-                                                </button>
-                                            </div>
+                                        <td colspan="4" class="text-center py-4 text-muted">
+                                            Belum ada data kategori terdaftar.
                                         </td>
                                     </tr>
                                 <?php } ?>
@@ -109,6 +123,24 @@ $query_kategori = mysqli_query($koneksi, "SELECT * FROM kategori ORDER BY no ASC
                     </div>
                 </div>
             </div>
+
+            <?php if ($total_pages > 1): ?>
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item <?php echo ($page <= 1) ? 'disabled' : ''; ?>">
+                            <a class="page-link" href="admin_kategori.php?page=<?php echo $page - 1; ?>">Sebelumnya</a>
+                        </li>
+                        <?php for ($i = 1; $i <= $total_pages; $i++): ?>
+                            <li class="page-item <?php echo ($page == $i) ? 'active' : ''; ?>">
+                                <a class="page-link" href="admin_kategori.php?page=<?php echo $i; ?>"><?php echo $i; ?></a>
+                            </li>
+                        <?php endfor; ?>
+                        <li class="page-item <?php echo ($page >= $total_pages) ? 'disabled' : ''; ?>">
+                            <a class="page-link" href="admin_kategori.php?page=<?php echo $page + 1; ?>">Berikutnya</a>
+                        </li>
+                    </ul>
+                </nav>
+            <?php endif; ?>
         </div>
     </div>
 

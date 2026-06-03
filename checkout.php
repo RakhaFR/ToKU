@@ -23,15 +23,21 @@ if (!$produk) {
 if (isset($_POST['proses_checkout'])) {
     $namabarang  = mysqli_real_escape_string($koneksi, $produk['namaproduk']);
     $pembeli     = mysqli_real_escape_string($koneksi, $_POST['pembeli']);
-    $rekbank     = mysqli_real_escape_string($koneksi, $_POST['rekbank']);
+    
+    // Mengambil pilihan bank dan nomor rekening lalu menggabungkannya
+    $pilihan_bank = isset($_POST['pilihan_bank']) ? trim($_POST['pilihan_bank']) : '';
+    $nomor_rek    = isset($_POST['nomor_rek']) ? trim($_POST['nomor_rek']) : '';
+    $rekbank_gabung = "Transfer " . $pilihan_bank . " - " . $nomor_rek;
+    
+    $rekbank     = mysqli_real_escape_string($koneksi, $rekbank_gabung);
     $harga       = $produk['harga'];
     $qty         = (int)$_POST['qty'];
     $total_harga = $harga * $qty;
     $invoice     = "INV-" . date("Ymd") .  "-" . rand(10000, 99999);
 
-    if (empty(trim($pembeli)) || empty(trim($rekbank))) {
+    if (empty(trim($pembeli)) || empty($pilihan_bank) || empty($nomor_rek)) {
         echo "<script>
-                alert('Gagal! Nama Pembeli dan Metode Pembayaran wajib diisi.');
+                alert('Gagal! Nama Pembeli, Pilihan Bank, dan Nomor Rekening wajib diisi.');
                 window.history.back();
               </script>";
         exit;
@@ -97,10 +103,24 @@ $username = explode("@", $fulluser)[0];
                         <label class="form-label small fw-bold">Nama Pembeli</label>
                         <input type="text" name="pembeli" class="form-control" placeholder="Masukkan nama Anda" required value="<?php echo isset($_SESSION['user']) ? htmlspecialchars(explode("@", $_SESSION['user'])[0]) : ''; ?>">
                     </div>
+                    
                     <div class="mb-3">
-                        <label class="form-label small fw-bold">Metode Pembayaran</label>
-                        <input type="text" name="rekbank" class="form-control" placeholder="Contoh: Transfer BCA" required>
+                        <label class="form-label small fw-bold">Pilih Bank Pembayaran</label>
+                        <select name="pilihan_bank" class="form-select" required>
+                            <option value="" disabled selected>-- Pilih Bank --</option>
+                            <option value="BCA">BCA (Bank Central Asia)</option>
+                            <option value="Mandiri">Mandiri</option>
+                            <option value="BRI">BRI (Bank Rakyat Indonesia)</option>
+                            <option value="BNI">BNI (Bank Negara Indonesia)</option>
+                            <option value="BSI">BSI (Bank Syariah Indonesia)</option>
+                        </select>
                     </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Nomor Rekening Anda</label>
+                        <input type="text" name="nomor_rek" class="form-control" placeholder="Masukkan nomor rekening" oninput="this.value = this.value.replace(/[^0-9]/g, '')" required>
+                        <div class="form-text text-muted" style="font-size: 11px;">Hanya menerima angka tanpa spasi/tanda baca.</div>
+                    </div>
+
                     <button type="submit" name="proses_checkout" class="btn btn-success w-100 fw-bold py-2 mt-2">
                         Bayar Sekarang
                     </button>

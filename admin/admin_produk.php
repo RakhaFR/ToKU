@@ -7,7 +7,6 @@ if (!isset($_SESSION['login']) || $_SESSION['status'] != 0) {
 include '../config/koneksi.php';
 /** @var mysqli $koneksi */
 
-// 1. PROSES TAMBAH PRODUK
 if (isset($_POST['proses_tambah_produk'])) {
     $namaproduk = mysqli_real_escape_string($koneksi, $_POST['namaproduk']);
     $kode       = mysqli_real_escape_string($koneksi, $_POST['kode']);
@@ -30,7 +29,6 @@ if (isset($_POST['proses_tambah_produk'])) {
     }
 }
 
-// 2. PROSES EDIT PRODUK
 if (isset($_POST['proses_edit_produk'])) {
     $id_produk  = mysqli_real_escape_string($koneksi, $_POST['id_produk']);
     $namaproduk = mysqli_real_escape_string($koneksi, $_POST['namaproduk']);
@@ -42,6 +40,12 @@ if (isset($_POST['proses_edit_produk'])) {
     $tmp_name = $_FILES['image']['tmp_name'];
 
     if ($filename != "") {
+        $query_lama = mysqli_query($koneksi, "SELECT image FROM produk WHERE no='$id_produk'");
+        if ($data_lama = mysqli_fetch_assoc($query_lama)) {
+            if ($data_lama['image'] != "default.jpg" && file_exists("../assets/images/" . $data_lama['image'])) {
+                unlink("../assets/images/" . $data_lama['image']);
+            }
+        }
         move_uploaded_file($tmp_name, "../assets/images/" . $filename);
         $update = mysqli_query($koneksi, "UPDATE produk SET namaproduk='$namaproduk', kode='$kode', ket='$ket', harga='$harga', image='$filename' WHERE no='$id_produk'");
     } else {
@@ -54,9 +58,16 @@ if (isset($_POST['proses_edit_produk'])) {
     }
 }
 
-// 3. PROSES HAPUS PRODUK
 if (isset($_GET['hapus_produk'])) {
     $id_hapus = mysqli_real_escape_string($koneksi, $_GET['hapus_produk']);
+    
+    $query_gambar = mysqli_query($koneksi, "SELECT image FROM produk WHERE no='$id_hapus'");
+    if ($data_gambar = mysqli_fetch_assoc($query_gambar)) {
+        if ($data_gambar['image'] != "default.jpg" && file_exists("../assets/images/" . $data_gambar['image'])) {
+            unlink("../assets/images/" . $data_gambar['image']);
+        }
+    }
+
     $delete = mysqli_query($koneksi, "DELETE FROM produk WHERE no='$id_hapus'");
     if ($delete) {
         echo "<script>alert('Produk berhasil dihapus!'); window.location='admin_produk.php';</script>";
@@ -64,8 +75,46 @@ if (isset($_GET['hapus_produk'])) {
     }
 }
 
+if (isset($_POST['multi_delete']) && isset($_POST['produk_ids'])) {
+    $ids = $_POST['produk_ids'];
+    if (is_array($ids) && count($ids) > 0) {
+        $clean_ids = array_map(function($id) use ($koneksi) {
+            return "'" . mysqli_real_escape_string($koneksi, $id) . "'";
+        }, $ids);
+        
+        $str_ids = implode(',', $clean_ids);
 
-$query = mysqli_query($koneksi, "SELECT * FROM produk ORDER BY no ASC");
+        $query_gambar_multi = mysqli_query($koneksi, "SELECT image FROM produk WHERE no IN ($str_ids)");
+        while ($data_gambar = mysqli_fetch_assoc($query_gambar_multi)) {
+            if ($data_gambar['image'] != "default.jpg" && file_exists("../assets/images/" . $data_gambar['image'])) {
+                unlink("../assets/images/" . $data_gambar['image']);
+            }
+        }
+
+        $delete_multi = mysqli_query($koneksi, "DELETE FROM produk WHERE no IN ($str_ids)");
+        if ($delete_multi) {
+            echo "<script>alert('Produk-produk terpilih berhasil dihapus!'); window.location='admin_produk.php';</script>";
+            exit;
+        }
+    }
+}
+
+$where_search = "";
+$search_keyword = "";
+if (isset($_GET['search']) && !empty(trim($_GET['search']))) {
+    $search_keyword = mysqli_real_escape_string($koneksi, trim($_GET['search']));
+    $where_search = " WHERE namaproduk LIKE '%$search_keyword%'";
+}
+
+$limit = 10;
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+$start = ($page > 1) ? ($page * $limit) - $limit : 0;
+
+$total_query = mysqli_query($koneksi, "SELECT COUNT(*) AS total FROM produk" . $where_search);
+$total_data = mysqli_fetch_assoc($total_query)['total'];
+$total_pages = ceil($total_data / $limit);
+
+$query = mysqli_query($koneksi, "SELECT * FROM produk" . $where_search . " ORDER BY no ASC LIMIT $start, $limit");
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -95,69 +144,141 @@ $query = mysqli_query($koneksi, "SELECT * FROM produk ORDER BY no ASC");
                 </button>
             </div>
 
-            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead class="table-light text-secondary border-bottom">
-                                <tr>
-                                    <th class="ps-3" style="width: 80px;">ID</th>
-                                    <th style="width: 80px;">Gambar</th>
-                                    <th>Nama Produk</th>
-                                    <th>Kategori/Kode</th>
-                                    <th>Keterangan</th>
-                                    <th>Harga Pokok</th>
-                                    <th class="text-center" style="width: 140px;">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php if (mysqli_num_rows($query) > 0) {
-                                    while ($row = mysqli_fetch_assoc($query)) { ?>
-                                        <tr>
-                                            <td class="fw-bold text-secondary ps-3">#<?php echo $row['no']; ?></td>
-                                            <td><img src="../assets/images/<?php echo $row['image']; ?>" class="rounded-3 border" style="width: 48px; height: 40px; object-fit: cover;"></td>
-                                            <td><strong class="text-dark d-block text-wrap"><?php echo htmlspecialchars($row['namaproduk']); ?></strong></td>
-                                            <td>
-                                                <span class="badge bg-light text-dark fw-bold border">
-                                                    <?php echo htmlspecialchars($row['kode']); ?>
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <p class="text-muted mb-0 text-truncate" style="max-width: 180px;" title="<?php echo htmlspecialchars($row['ket']); ?>">
-                                                    <?php echo htmlspecialchars($row['ket']); ?>
-                                                </p>
-                                            </td>
-                                            <td class="text-dark fw-bold">Rp<?php echo number_format($row['harga'], 0, ',', '.'); ?></td>
-                                            <td class="text-center pe-3">
-                                                <button class="btn btn-warning btn-sm rounded-3 px-2 me-1 btn-edit-produk" 
-                                                        data-id="<?php echo $row['no']; ?>"
-                                                        data-nama="<?php echo htmlspecialchars($row['namaproduk']); ?>"
-                                                        data-kode="<?php echo htmlspecialchars($row['kode']); ?>"
-                                                        data-ket="<?php echo htmlspecialchars($row['ket']); ?>"
-                                                        data-harga="<?php echo $row['harga']; ?>"
-                                                        data-img="<?php echo $row['image']; ?>">
-                                                    <i class="fas fa-edit"></i>
-                                                </button>
-                                                <button class="btn btn-danger btn-sm rounded-3 px-2 btn-delete-produk" 
-                                                        data-id="<?php echo $row['no']; ?>"
-                                                        data-nama="<?php echo htmlspecialchars($row['namaproduk']); ?>">
-                                                    <i class="fas fa-trash-alt"></i>
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    <?php }
-                                } else { ?>
-                                    <tr>
-                                        <td colspan="7" class="text-center py-5 text-muted">
-                                            <i class="fas fa-box-open d-block fs-2 mb-2 text-secondary"></i>Belum ada data produk terdaftar.
-                                        </td>
-                                    </tr>
-                                <?php } ?>
-                            </tbody>
-                        </table>
-                    </div>
+            <div class="card border-0 shadow-sm rounded-4 mb-4">
+                <div class="card-body p-3">
+                    <form action="admin_produk.php" method="GET" class="row g-2 align-items-center">
+                        <div class="col-md-6 col-sm-8">
+                            <div class="input-group">
+                                <span class="input-group-text bg-white border-end-0 text-muted">
+                                    <i class="fas fa-search"></i>
+                                </span>
+                                <input type="text" name="search" class="form-control border-start-0 ps-0 shadow-none" placeholder="Cari nama produk..." value="<?php echo htmlspecialchars($search_keyword); ?>">
+                            </div>
+                        </div>
+                        <div class="col-md-2 col-sm-4">
+                            <button type="submit" class="btn btn-dark w-100 fw-semibold">Cari</button>
+                        </div>
+                        <?php if (!empty($search_keyword)): ?>
+                            <div class="col-md-2">
+                                <a href="admin_produk.php" class="btn btn-light border w-100 fw-semibold text-secondary">Reset</a>
+                            </div>
+                        <?php endif; ?>
+                    </form>
                 </div>
             </div>
+
+            <form action="admin_produk.php" method="POST" id="formBulkDelete">
+                <div class="d-flex justify-content-start mb-3 align-items-center gap-2 d-none" id="bulkDeleteContainer">
+                    <span class="text-muted small fw-semibold" id="checkCountText">0 Terpilih</span>
+                    <button type="button" class="btn btn-danger btn-sm rounded-3 fw-bold px-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalBulkDelete">
+                        <i class="fas fa-trash me-1"></i> Hapus Massal
+                    </button>
+                </div>
+
+                <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light text-secondary border-bottom">
+                                    <tr>
+                                        <th class="ps-3" style="width: 40px;">
+                                            <input type="checkbox" class="form-check-input" id="checkAll">
+                                        </th>
+                                        <th style="width: 60px;">ID</th>
+                                        <th style="width: 80px;">Gambar</th>
+                                        <th>Nama Produk</th>
+                                        <th>Kategori/Kode</th>
+                                        <th>Keterangan</th>
+                                        <th>Harga Pokok</th>
+                                        <th class="text-center" style="width: 140px;">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php if (mysqli_num_rows($query) > 0) {
+                                        while ($row = mysqli_fetch_assoc($query)) { ?>
+                                            <tr>
+                                                <td class="ps-3">
+                                                    <input type="checkbox" name="produk_ids[]" value="<?php echo $row['no']; ?>" class="form-check-input checkItem">
+                                                </td>
+                                                <td class="fw-bold text-secondary">#<?php echo $row['no']; ?></td>
+                                                <td><img src="../assets/images/<?php echo $row['image']; ?>" class="rounded-3 border" style="width: 48px; height: 40px; object-fit: cover;"></td>
+                                                <td><strong class="text-dark d-block text-wrap"><?php echo htmlspecialchars($row['namaproduk']); ?></strong></td>
+                                                <td>
+                                                    <span class="badge bg-light text-dark fw-bold border">
+                                                        <?php echo htmlspecialchars($row['kode']); ?>
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <p class="text-muted mb-0 text-truncate" style="max-width: 180px;" title="<?php echo htmlspecialchars($row['ket']); ?>">
+                                                        <?php echo htmlspecialchars($row['ket']); ?>
+                                                    </p>
+                                                </td>
+                                                <td class="text-dark fw-bold">Rp<?php echo number_format($row['harga'], 0, ',', '.'); ?></td>
+                                                <td class="text-center pe-3">
+                                                    <button type="button" class="btn btn-warning btn-sm rounded-3 px-2 me-1 btn-edit-produk" 
+                                                            data-id="<?php echo $row['no']; ?>"
+                                                            data-nama="<?php echo htmlspecialchars($row['namaproduk']); ?>"
+                                                            data-kode="<?php echo htmlspecialchars($row['kode']); ?>"
+                                                            data-ket="<?php echo htmlspecialchars($row['ket']); ?>"
+                                                            data-harga="<?php echo $row['harga']; ?>"
+                                                            data-img="<?php echo $row['image']; ?>">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                    <button type="button" class="btn btn-danger btn-sm rounded-3 px-2 btn-delete-produk" 
+                                                            data-id="<?php echo $row['no']; ?>"
+                                                            data-nama="<?php echo htmlspecialchars($row['namaproduk']); ?>">
+                                                        <i class="fas fa-trash-alt"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        <?php }
+                                    } else { ?>
+                                        <tr>
+                                            <td colspan="8" class="text-center py-5 text-muted">
+                                                <i class="fas fa-box-open d-block fs-2 mb-2 text-secondary"></i>Belum ada data produk terdaftar.
+                                            </td>
+                                        </tr>
+                                    <?php } ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal fade" id="modalBulkDelete" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-sm modal-dialog-centered">
+                        <div class="modal-content border-0 shadow rounded-4">
+                            <div class="modal-body text-center p-4">
+                                <i class="fas fa-exclamation-triangle text-danger fs-1 mb-3 d-block"></i>
+                                <h5 class="fw-bold text-dark mb-1">Hapus Massal?</h5>
+                                <p class="text-muted small mb-4">Apakah Anda yakin ingin melenyapkan seluruh produk yang dipilih sekaligus beserta berkas gambarnya?</p>
+                                <div class="d-flex gap-2">
+                                    <button type="button" class="btn btn-light rounded-3 w-50 fw-semibold btn-sm" data-bs-dismiss="modal">Batal</button>
+                                    <button type="submit" name="multi_delete" class="btn btn-danger rounded-3 w-50 fw-semibold btn-sm">Ya, Hapus Semua</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+            <?php if ($total_pages > 1): ?>
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item <?php echo ($page <= 1) ? 'disabled' : ''; ?>">
+                            <a class="page-link" href="admin_produk.php?page=<?php echo $page - 1; ?><?php echo !empty($search_keyword) ? '&search=' . urlencode($search_keyword) : ''; ?>">Sebelumnya</a>
+                        </li>
+                        <?php for ($i = 1; $i <= $total_pages; $i++): ?>
+                            <li class="page-item <?php echo ($page == $i) ? 'active' : ''; ?>">
+                                <a class="page-link" href="admin_produk.php?page=<?php echo $i; ?><?php echo !empty($search_keyword) ? '&search=' . urlencode($search_keyword) : ''; ?>"><?php echo $i; ?></a>
+                            </li>
+                        <?php endfor; ?>
+                        <li class="page-item <?php echo ($page >= $total_pages) ? 'disabled' : ''; ?>">
+                            <a class="page-link" href="admin_produk.php?page=<?php echo $page + 1; ?><?php echo !empty($search_keyword) ? '&search=' . urlencode($search_keyword) : ''; ?>">Berikutnya</a>
+                        </li>
+                    </ul>
+                </nav>
+            <?php endif; ?>
         </div>
     </div>
 
@@ -233,7 +354,6 @@ $query = mysqli_query($koneksi, "SELECT * FROM produk ORDER BY no ASC");
                                 <label class="form-label small fw-bold text-secondary">Kategori Komoditas</label>
                                 <select name="kode" id="edit_kode_produk" class="form-select rounded-3" required>
                                     <?php 
-                                    // Mengambil ulang query data kategori untuk modal edit
                                     $q_kat_edit = mysqli_query($koneksi, "SELECT * FROM kategori ORDER BY kode ASC");
                                     while($row_kat_edit = mysqli_fetch_assoc($q_kat_edit)) {
                                         echo "<option value='".htmlspecialchars($row_kat_edit['kode'])."'>".htmlspecialchars($row_kat_edit['kode'])." (".htmlspecialchars($row_kat_edit['kategori']).")</option>";
@@ -305,10 +425,7 @@ $query = mysqli_query($koneksi, "SELECT * FROM produk ORDER BY no ASC");
             btn.addEventListener('click', function() {
                 document.getElementById('edit_id_produk').value = this.getAttribute('data-id');
                 document.getElementById('edit_nama_produk').value = this.getAttribute('data-nama');
-                
-                // Dropdown select secara otomatis akan memilih value yang cocok dengan attribute data-kode
                 document.getElementById('edit_kode_produk').value = this.getAttribute('data-kode');
-                
                 document.getElementById('edit_ket_produk').value = this.getAttribute('data-get') || this.getAttribute('data-ket');
                 document.getElementById('edit_harga_produk').value = this.getAttribute('data-harga');
                 
@@ -339,6 +456,38 @@ $query = mysqli_query($koneksi, "SELECT * FROM produk ORDER BY no ASC");
             document.getElementById('file-tambah').value = "";
             document.getElementById('preview-tambah').src = "#";
             document.getElementById('container-preview-tambah').classList.add('d-none');
+        });
+
+        const checkAll = document.getElementById('checkAll');
+        const checkItems = document.querySelectorAll('.checkItem');
+        const bulkContainer = document.getElementById('bulkDeleteContainer');
+        const checkCountText = document.getElementById('checkCountText');
+
+        function toggleBulkButton() {
+            const checkedCount = document.querySelectorAll('.checkItem:checked').length;
+            if (checkedCount > 0) {
+                bulkContainer.classList.remove('d-none');
+                checkCountText.innerText = checkedCount + ' Terpilih';
+            } else {
+                bulkContainer.classList.add('d-none');
+            }
+        }
+
+        if (checkAll) {
+            checkAll.addEventListener('change', function() {
+                checkItems.forEach(item => {
+                    item.checked = this.checked;
+                });
+                toggleBulkButton();
+            });
+        }
+
+        checkItems.forEach(item => {
+            item.addEventListener('change', function() {
+                const totalChecked = document.querySelectorAll('.checkItem:checked').length;
+                checkAll.checked = (totalChecked === checkItems.length);
+                toggleBulkButton();
+            });
         });
     </script>
 </body>
